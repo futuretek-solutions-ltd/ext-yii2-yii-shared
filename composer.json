@@ -1,0 +1,53 @@
+{
+    "name": "futuretek/yii2-yii-shared",
+    "description": "Shared components for YII used in FTS",
+    "keywords": [
+        "extension",
+        "shared",
+        "components",
+        "yii"
+    ],
+    "type": "yii2-extension",
+    "license": "Apache-2.0",
+    "homepage": "http://www.futuretek.cz/",
+    "authors": [
+        {
+            "name": "Lukas Cerny",
+            "email": "lukas.cerny@futuretek.cz",
+            "homepage": "http://www.futuretek.cz",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/futuretek-solutions-ltd/ext-yii-shared/issues",
+        "wiki": "https://github.com/futuretek-solutions-ltd/ext-yii-shared/wiki",
+        "source": "https://github.com/futuretek-solutions-ltd/ext-yii-shared"
+    },
+    "require": {
+        "php": ">=5.4.0",
+        "yiisoft/yii2": "^2.0.0",
+        "futuretek/yii2-shared": "^1.0.0",
+        "uniqby/yii2-phone-formatter": "~0.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "futuretek\\yii\\shared\\": ""
+        }
+    },
+    "extra": {
+        "yii-config": {
+            "components": {
+                "formatter": {
+                    "class": "futuretek\\yii\\shared\\Formatter",
+                    "currencyCode": "CZK",
+                    "defaultTimeZone": "Europe/Prague",
+                    "timeZone": "Europe/Prague",
+                    "numberFormatterOptions": {
+                        "7": 0,
+                        "6": 2
+                    }
+                }
+            }
+        }
+    }
+}
