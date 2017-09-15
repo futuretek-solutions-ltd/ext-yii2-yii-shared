@@ -24,10 +24,10 @@
         "source": "https://github.com/futuretek-solutions-ltd/ext-yii-shared"
     },
     "require": {
-        "php": ">=5.4.0",
+        "php": ">=5.5.0",
         "yiisoft/yii2": "^2.0.0",
         "futuretek/yii2-shared": "^1.0.0",
-        "uniqby/yii2-phone-formatter": "~0.2"
+        "uniqby/yii2-phone-formatter": "0.2.*"
     },
     "autoload": {
         "psr-4": {
