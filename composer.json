@@ -19,9 +19,9 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/futuretek-solutions-ltd/ext-yii-shared/issues",
-        "wiki": "https://github.com/futuretek-solutions-ltd/ext-yii-shared/wiki",
-        "source": "https://github.com/futuretek-solutions-ltd/ext-yii-shared"
+        "issues": "https://github.com/futuretek-solutions-ltd/ext-yii2-yii-shared/issues",
+        "wiki": "https://github.com/futuretek-solutions-ltd/ext-yii2-yii-shared/wiki",
+        "source": "https://github.com/futuretek-solutions-ltd/ext-yii2-yii-shared"
     },
     "require": {
         "php": ">=5.5.0",
