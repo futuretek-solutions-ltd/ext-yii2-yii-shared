@@ -19,4 +19,7 @@ return [
     'Error while calling beforeCommit function.' => 'Došlo k chybě při volání funkce beforeCommit.',
     'Required sub-model parameter (name, class, relation, fk) missing.' => 'Chybí povinný parametr podřízeného modelu (name, class, relation, fk).',
     'Error while deleting rows from sub-model {name}.' => 'Došlo k chybě při odstraňování položek v podřízeném modelu {name}.',
+
+    //Reflection
+    'Specified class {class} not found.' => 'Uvedená třída {class} nebyla nalezena.',
 ];
