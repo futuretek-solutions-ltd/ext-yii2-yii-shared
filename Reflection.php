@@ -26,6 +26,8 @@ class Reflection
     {
         $methods = [];
 
+        $controllerClass = str_replace('/', '\\', $controllerClass);
+
         if (!class_exists($controllerClass)) {
             throw new \RuntimeException(\Yii::t('fts-yii-shared', 'Specified class {class} not found.', ['class' => $controllerClass]));
         }
