@@ -35,7 +35,7 @@ class DT
      * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
      * @return string
      */
-    public static function toDb($dateTime)
+    public static function toDb($dateTime = 'now')
     {
         return self::ensure($dateTime)->format('Y-m-d H:i:s');
     }
@@ -46,7 +46,7 @@ class DT
      * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
      * @return string
      */
-    public static function toTimezone($dateTime)
+    public static function toTimezone($dateTime = 'now')
     {
         return self::ensure($dateTime)->format('c');
     }
