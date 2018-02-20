@@ -280,4 +280,67 @@ class DT
             'end' => $endDate,
         ];
     }
+
+    /**
+     * Returns the consecutive date ranges while respecting weekends and holidays
+     *
+     * @param string[]|DateTime[] $dates List of dates in suitable format (Y-m-d) or DateTime
+     * @param bool $onlyWorkDays Skip weekends and holidays while detecting date blocks
+     * @return \DateTime[]|null Return array with associative arrays with two DateTime elements (start, end) or null when no dates are specified
+     * @throws \Exception
+     */
+    public static function getAllDateBlocks(array $dates, $onlyWorkDays = true)
+    {
+        if (0 === count($dates)) {
+            return null;
+        }
+
+        array_walk($dates, function (&$val) {
+            $val = substr($val, 0, 10);
+        });
+
+        $blocks = [];
+
+        $datePeriod = new \DatePeriod(
+            new \DateTime(min($dates)),
+            new \DateInterval('P1D'),
+            (new \DateTime(max($dates)))->add(new \DateInterval('P1D'))
+        );
+
+        $blockStart = null;
+        $blockEnd = null;
+
+        foreach ($datePeriod as $value) {
+            /** @var \DateTime $value */
+            if ($onlyWorkDays && (in_array(Tools::dow($value), [Tools::DOW_SATURDAY, Tools::DOW_SUNDAY], true) || Tools::isCzechHoliday($value))) {
+                continue;
+            }
+
+            $date = $value->format('Y-m-d');
+            if (in_array($date, $dates, true)) {
+                if ($blockStart === null) {
+                    $blockStart = $value;
+                    $blockEnd = $value;
+                }else {
+                    $blockEnd = $value;
+                }
+            } else {
+                if ($blockStart !== null) {
+                    $blocks[] = [
+                        'start' => $blockStart,
+                        'end' => $blockEnd,
+                    ];
+                    $blockStart = null;
+                    $blockEnd = null;
+                }
+            }
+        }
+        if ($blockStart !== null) {
+            $blocks[] = [
+                'start' => $blockStart,
+                'end' => $blockEnd,
+            ];
+        }
+        return $blocks;
+    }
 }
