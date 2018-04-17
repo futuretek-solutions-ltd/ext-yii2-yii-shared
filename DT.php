@@ -6,6 +6,7 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use futuretek\shared\Tools;
+use yii\base\InvalidParamException;
 
 /**
  * Class DT
@@ -235,6 +236,22 @@ class DT
         }
 
         return $interval->format($format);
+    }
+
+    /**
+     * Convert DateInterval to seconds.
+     * Can be used only on object created form DateTime::diff() method.
+     *
+     * @param DateInterval $interval
+     * @return float|int
+     * @throws \Exception
+     */
+    public static function intervalToSeconds(DateInterval $interval)
+    {
+        if (false === $interval->days) {
+            throw new InvalidParamException('Method can be used only on interval created from diff.');
+        }
+        return $interval->days * 86400 + $interval->h * 3600 + $interval->m * 60 + $interval->s;
     }
 
     /**
