@@ -31,7 +31,7 @@ class DbModel extends ActiveRecord
      */
     public function save($runValidation = true, $attributeNames = null)
     {
-        if ($this->getIsNewRecord() && $this->hasAttribute('created_at') && !empty($this->created_at)) {
+        if ($this->getIsNewRecord() && $this->hasAttribute('created_at') && empty($this->created_at)) {
             $this->created_at = (new \DateTime('now', new \DateTimeZone(Yii::$app->timeZone)))->format('Y-m-d H:i:s');
         }
         if ($this->hasAttribute('updated_at')) {
