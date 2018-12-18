@@ -36,6 +36,13 @@
     },
     "extra": {
         "yii-config": {
+            "console": {
+                "controllerMap": {
+                    "meta": {
+                        "class": "futuretek\\yii\\shared\\MetaController"
+                    }
+                }
+            },
             "components": {
                 "formatter": {
                     "class": "futuretek\\yii\\shared\\Formatter",
