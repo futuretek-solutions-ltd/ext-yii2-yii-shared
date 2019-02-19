@@ -6,6 +6,7 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use futuretek\shared\Tools;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidParamException;
 
 /**
@@ -19,11 +20,21 @@ use yii\base\InvalidParamException;
  */
 class DT
 {
+    const DOW_MONDAY = 0;
+    const DOW_TUESDAY = 1;
+    const DOW_WEDNESDAY = 2;
+    const DOW_THURSDAY = 3;
+    const DOW_FRIDAY = 4;
+    const DOW_SATURDAY = 5;
+    const DOW_SUNDAY = 6;
+
+
     /**
      * Create DateTime object for specified date and time
      *
      * @param string $dateTime Date and time in valid format
      * @return DateTime
+     * @throws \Exception
      */
     public static function c($dateTime = 'now')
     {
@@ -119,6 +130,7 @@ class DT
      *
      * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
      * @return DateTime
+     * @throws \Exception
      */
     public static function ensure($dateTime)
     {
@@ -182,7 +194,7 @@ class DT
      * @return DateTime
      * @see http://php.net/manual/en/timezones.php
      * @throws \yii\base\InvalidParamException
-     * @throws \yii\base\InvalidConfigException
+     * @throws \Exception
      */
     public static function convertTimezone($dateTime, $timezone)
     {
@@ -244,13 +256,13 @@ class DT
      *
      * @param DateInterval $interval
      * @return float|int
-     * @throws \Exception
      */
     public static function intervalToSeconds(DateInterval $interval)
     {
         if (false === $interval->days) {
-            throw new InvalidParamException('Method can be used only on interval created from diff.');
+            throw new InvalidArgumentException('Method can be used only on interval created from diff.');
         }
+
         return $interval->days * 86400 + $interval->h * 3600 + $interval->m * 60 + $interval->s;
     }
 
@@ -338,7 +350,7 @@ class DT
                 if ($blockStart === null) {
                     $blockStart = $value;
                     $blockEnd = $value;
-                }else {
+                } else {
                     $blockEnd = $value;
                 }
             } else {
@@ -358,6 +370,198 @@ class DT
                 'end' => $blockEnd,
             ];
         }
+
         return $blocks;
+    }
+
+    /**
+     * Whether the specified date is Czech holiday
+     *
+     * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
+     * @return bool Is holiday
+     * @throws \Exception
+     */
+    public static function isCzechHoliday($dateTime)
+    {
+        $dateTime = self::ensure($dateTime);
+
+        $holidays = ['01-01', '05-01', '05-08', '07-05', '07-06', '09-28', '10-28', '11-17', '12-24', '12-25', '12-26'];
+
+        if (in_array($dateTime->format('m-d'), $holidays, true)) {
+            return true;
+        }
+
+        //Easter
+        $easterDays = easter_days($dateTime->format('Y')); //Return number of days from base to easter sunday
+        $easter = self::c($dateTime->format('Y') . '-03-21');
+
+        //Easter friday
+        if (DT::add($easter, 'P' . $easterDays - 2 . 'D')->format('Y-m-d') === $dateTime->format('Y-m-d')) {
+            return true;
+        }
+        //Easter monday
+        if (DT::add($easter, 'P' . ($easterDays + 1) . 'D')->format('Y-m-d') === $dateTime->format('Y-m-d')) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get day of week
+     * Function is compatible with SQL function WEEKDAY()
+     *
+     * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
+     * @return int Day index (0 = Monday, 6 = Sunday)
+     * @throws \Exception
+     */
+    public static function dow($dateTime = 'now')
+    {
+        return self::ensure($dateTime)->format('N') - 1;
+    }
+
+
+    /**
+     * Get number of working days between two dates
+     *
+     * @param DateTime|string|int $dateFrom Begin date and time in valid format or DateTime object or timestamp(int)
+     * @param DateTime|string|int $dateTo End date and time in valid format or DateTime object or timestamp(int)
+     * @return int
+     * @throws \Exception
+     */
+    public static function getWorkingDaysCount($dateFrom, $dateTo)
+    {
+        $numWorkDays = 0;
+        $datePeriod = new \DatePeriod(self::ensure($dateFrom), new \DateInterval('P1D'), self::ensure($dateTo));
+        foreach ($datePeriod as $value) {
+            /** @var \DateTime $value */
+            if (!in_array(self::dow($value), [Tools::DOW_SATURDAY, Tools::DOW_SUNDAY], true) && !self::isCzechHoliday($value)) {
+                $numWorkDays++;
+            }
+        }
+
+        return $numWorkDays;
+    }
+
+    /**
+     * Round time up to specified minute interval
+     *
+     * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
+     * @param int $minuteInterval Minute interval to round to
+     * @return \DateTime|false
+     * @throws \Exception
+     */
+    public static function roundUpToMinuteInterval($dateTime, $minuteInterval = 10)
+    {
+        $dateTime = self::ensure($dateTime);
+
+        return $dateTime->setTime(
+            $dateTime->format('H'),
+            ceil($dateTime->format('i') / $minuteInterval) * $minuteInterval
+        );
+    }
+
+    /**
+     * Round time down to specified minute interval
+     *
+     * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
+     * @param int $minuteInterval Minute interval to round to
+     * @return \DateTime
+     * @throws \Exception
+     */
+    public static function roundDownToMinuteInterval($dateTime, $minuteInterval = 10)
+    {
+        $dateTime = self::ensure($dateTime);
+
+        return $dateTime->setTime(
+            $dateTime->format('H'),
+            floor($dateTime->format('i') / $minuteInterval) * $minuteInterval
+        );
+    }
+
+    /**
+     * Round time to nearest specified minute interval
+     *
+     * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
+     * @param int $minuteInterval Minute interval to round to
+     * @return \DateTime
+     * @throws \Exception
+     */
+    public static function roundToNearestMinuteInterval($dateTime, $minuteInterval = 10)
+    {
+        $dateTime = self::ensure($dateTime);
+
+        return $dateTime->setTime(
+            $dateTime->format('H'),
+            round($dateTime->format('i') / $minuteInterval) * $minuteInterval
+        );
+    }
+
+    /**
+     * Get difference between two dates and times and output it in human readable format.
+     *
+     * @param DateTime|string|int $start Start date and time in valid format or DateTime object or timestamp(int)
+     * @param DateTime|string|int $end End date and time in valid format or DateTime object or timestamp(int)
+     *
+     * @return string
+     */
+    public static function formatDateDiff($start, $end = 'now')
+    {
+        $interval = self::diff($start, $end, true);
+
+        $format = [];
+        if ($interval->y !== 0) {
+            $format[] = '%yR';
+        }
+        if ($interval->m !== 0) {
+            $format[] = '%mM';
+        }
+        if ($interval->d !== 0) {
+            $format[] = '%dD';
+        }
+        if ($interval->h !== 0) {
+            $format[] = '%hh';
+        }
+        if ($interval->i !== 0) {
+            $format[] = '%im';
+        }
+        if ($interval->s !== 0) {
+            $format[] = '%ss';
+        }
+
+        // We use the two biggest parts
+        if (0 === count($format)) {
+            return \Yii::t('fts-yii-shared', 'now');
+        }
+
+        if (count($format) > 1) {
+            $format = array_shift($format) . '&nbsp;' . array_shift($format);
+        } else {
+            $format = array_pop($format);
+        }
+
+        return $interval->format($format);
+    }
+
+    /**
+     * Get day name in current language
+     *
+     * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
+     * @return string Localised day name
+     * @throws \Exception
+     */
+    public static function getDayName($dateTime)
+    {
+        $dayNames = [
+            self::DOW_MONDAY => \Yii::t('fts-yii-shared', 'Monday'),
+            self::DOW_TUESDAY => \Yii::t('fts-yii-shared', 'Tuesday'),
+            self::DOW_WEDNESDAY => \Yii::t('fts-yii-shared', 'Wednesday'),
+            self::DOW_THURSDAY => \Yii::t('fts-yii-shared', 'Thursday'),
+            self::DOW_FRIDAY => \Yii::t('fts-yii-shared', 'Friday'),
+            self::DOW_SATURDAY => \Yii::t('fts-yii-shared', 'Saturday'),
+            self::DOW_SUNDAY => \Yii::t('fts-yii-shared', 'Sunday'),
+        ];
+
+        return $dayNames[self::ensure($dateTime)->format('N') - 1];
     }
 }

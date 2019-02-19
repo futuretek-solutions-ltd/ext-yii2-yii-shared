@@ -10,6 +10,13 @@ return [
 
     //DT
     'now' => 'nyní',
+    'Monday' => 'pondělí',
+    'Tuesday' => 'úterý',
+    'Wednesday' => 'středa',
+    'Thursday' => 'čtvrtek',
+    'Friday' => 'paátek',
+    'Saturday' => 'sobota',
+    'Sunday' => 'neděle',
 
     //Controller
     'Required sub-model parameter (name, class, fk) missing.' => 'Chybí povinný parametr podřízeného modelu (name, class, fk).',
