@@ -396,7 +396,7 @@ class DT
         $easter = self::c($dateTime->format('Y') . '-03-21');
 
         //Easter friday
-        if (DT::add($easter, 'P' . $easterDays - 2 . 'D')->format('Y-m-d') === $dateTime->format('Y-m-d')) {
+        if (DT::add($easter, 'P' . ($easterDays - 2) . 'D')->format('Y-m-d') === $dateTime->format('Y-m-d')) {
             return true;
         }
         //Easter monday
