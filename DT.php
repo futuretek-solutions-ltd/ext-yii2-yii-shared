@@ -564,4 +564,37 @@ class DT
 
         return $dayNames[self::ensure($dateTime)->format('N') - 1];
     }
+
+    /**
+     * Check if two provided dates are the same day
+     *
+     * @param DateTime|string|int $date1 First date and time in valid format or DateTime object or timestamp(int)
+     * @param DateTime|string|int $date2 Second date and time in valid format or DateTime object or timestamp(int)
+     * @return bool
+     * @throws \Exception
+     */
+    public static function isSameDay($date1, $date2)
+    {
+        $date1 = self::ensure($date1);
+        $date1->setTime(0, 0);
+        $date2 = self::ensure($date2);
+        $date2->setTime(0, 0);
+
+        return $date1 === $date2;
+    }
+
+    /**
+     * Return number of seconds in DateInterval
+     *
+     * @param DateInterval $dateInterval
+     * @return int Number of seconds
+     * @throws \Exception
+     */
+    public static function toSeconds(DateInterval $dateInterval)
+    {
+        $reference = self::c();
+        $endTime = $reference->add($dateInterval);
+
+        return $endTime->getTimestamp() - $reference->getTimestamp();
+    }
 }
