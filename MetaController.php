@@ -20,20 +20,20 @@ class MetaController extends Controller
      * @var string File in which the helper will be generated
      */
     public $metaFile = '@app/.phpstorm.meta.php';
-    public $config = '@app/config/web.php';
 
     /**
      * Generate PHPStorm meta file.
+     * @param string $config Config file path. Defaults to @app/config/web.php
      */
-    public function actionIndex()
+    public function actionIndex($config = '@app/config/web.php')
     {
         $this->stdout("Generating meta file to {$this->metaFile}\n");
 
-        $config = require Yii::getAlias($this->config);
+        $configData = require Yii::getAlias($config);
 
         file_put_contents(
             Yii::getAlias($this->metaFile),
-            $this->generateAppClass($config) . $this->getGeneratePhpStormMeta($config)
+            $this->generateAppClass($configData) . $this->getGeneratePhpStormMeta($configData)
         );
 
         $this->stdout("Done.\n");
