@@ -53,6 +53,17 @@ class DT
     }
 
     /**
+     * Convert DateTime or string format to WS compatible format
+     *
+     * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
+     * @return string
+     */
+    public static function toWs($dateTime = 'now')
+    {
+        return self::ensure($dateTime)->format('c');
+    }
+
+    /**
      * Convert DateTime or string format to full date time with timezone information according to ISO-8601
      *
      * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
