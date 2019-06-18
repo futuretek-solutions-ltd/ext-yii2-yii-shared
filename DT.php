@@ -222,9 +222,10 @@ class DT
      *
      * @param DateTime|string|int $start Date and time in valid format or DateTime object or timestamp(int)
      * @param DateTime|string|int $end Date and time in valid format or DateTime object or timestamp(int)
+     * @param string $separator Separator. For HTML use &amp;nbsp;
      * @return string
      */
-    public static function displayRelative($start, $end = 'now')
+    public static function displayRelative($start, $end = 'now', $separator = ' ')
     {
         $format = [];
         $interval = self::diff($start, $end, true);
@@ -253,7 +254,7 @@ class DT
             return \Yii::t('fts-yii-shared', 'now');
         }
         if (count($format) > 1) {
-            $format = array_shift($format) . '&nbsp;' . array_shift($format);
+            $format = array_shift($format) . $separator . array_shift($format);
         } else {
             $format = array_pop($format);
         }
