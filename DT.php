@@ -620,4 +620,28 @@ class DT
 
         return $endTime->getTimestamp() - $reference->getTimestamp();
     }
+
+    /**
+     * Find next occurrence of recurring date after specified date
+     *
+     * @param DateTime|string|int $date Date to find next occurrence of. Can be date and time in valid format or DateTime object or timestamp(int).
+     * @param string|DateInterval $interval Recurring interval
+     * @param DateTime|string|int $nextDate Find next occurrence after this date. Can be date and time in valid format or DateTime object or timestamp(int).
+     * @return DateTime
+     * @throws \Exception
+     */
+    public static function getNextOccurrence($date, $interval, $nextDate)
+    {
+        $date = self::ensure($date);
+        $nextDate = self::ensure($nextDate);
+        if (!($interval instanceof DateInterval)) {
+            $interval = new DateInterval($interval);
+        }
+
+        while ($date <= $nextDate) {
+            $date->add($interval);
+        }
+
+        return $date;
+    }
 }
