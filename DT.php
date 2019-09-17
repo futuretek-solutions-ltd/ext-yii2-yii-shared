@@ -46,6 +46,7 @@ class DT
      *
      * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
      * @return string
+     * @throws \Exception
      */
     public static function toDb($dateTime = 'now')
     {
@@ -57,6 +58,7 @@ class DT
      *
      * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
      * @return string
+     * @throws \Exception
      */
     public static function toWs($dateTime = 'now')
     {
@@ -66,12 +68,20 @@ class DT
     /**
      * Convert DateTime or string format to full date time with timezone information according to ISO-8601
      *
-     * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
+     * @param DateTime|string $dateTime Date and time in valid format or DateTime object
+     * @param string $timezone Target timezone name
      * @return string
+     * @throws \Exception
+     * @see http://php.net/manual/en/timezones.php
      */
-    public static function toTimezone($dateTime = 'now')
+    public static function toTimezone($dateTime, $timezone = null)
     {
-        return self::ensure($dateTime)->format('c');
+        $dt = self::ensure($dateTime);
+        if ($timezone !== null && $timezone !== \Yii::$app->timeZone) {
+            $dt = $dt->setTimezone(new DateTimeZone($timezone));
+        }
+
+        return $dt->format('c');
     }
 
     /**
@@ -107,6 +117,7 @@ class DT
      * @param DateTime|string $d2 Date 2
      * @param bool $absolute Return absolute difference (always positive)
      * @return bool|DateInterval DateInterval or false on error
+     * @throws \Exception
      */
     public static function diff($d1, $d2, $absolute = false)
     {
