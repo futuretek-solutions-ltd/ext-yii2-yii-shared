@@ -2,8 +2,9 @@
 
 namespace futuretek\yii\shared;
 
+use yii\base\Model;
 use yii\base\UserException;
-use yii\db\BaseActiveRecord;
+use yii\web\Response;
 
 /**
  * Class ModelSaveException
@@ -21,23 +22,29 @@ class ModelSaveException extends UserException
     /**
      * ModelSaveException constructor.
      *
-     * @param BaseActiveRecord $model Model instance
+     * @param Model $model Model instance
      */
-    public function __construct(BaseActiveRecord $model)
+    public function __construct(Model $model)
     {
-        $errors = array_values($model->getFirstErrors());
+        $errors = $model->getErrorSummary(true);
         if (0 === count($errors)) {
+            $statusCode = 500;
             $message = \Yii::t(
                 'fts-yii-shared',
                 'Unknown error while saving data to {model}',
                 ['model' => $model::className()]
             );
         } else {
+            $statusCode = 422;
             $message = \Yii::t(
                 'fts-yii-shared',
                 'Error while saving data to {model}: {error}',
                 ['model' => $model::className(), 'error' => implode(' ', $errors)]
             );
+        }
+
+        if (\Yii::$app->response instanceof Response) {
+            \Yii::$app->response->setStatusCode($statusCode);
         }
 
         parent::__construct($message);
