@@ -9,12 +9,12 @@
     ],
     "type": "yii2-extension",
     "license": "Apache-2.0",
-    "homepage": "http://www.futuretek.cz/",
+    "homepage": "https://www.futuretek.cz/",
     "authors": [
         {
             "name": "Lukas Cerny",
             "email": "lukas.cerny@futuretek.cz",
-            "homepage": "http://www.futuretek.cz",
+            "homepage": "https://www.futuretek.cz",
             "role": "Developer"
         }
     ],
@@ -24,10 +24,10 @@
         "source": "https://github.com/futuretek-solutions-ltd/ext-yii2-yii-shared"
     },
     "require": {
-        "php": ">=5.5.0",
+        "php": ">=7.4.0",
         "yiisoft/yii2": "^2.0.0",
-        "futuretek/yii2-shared": "^2.0.0",
-        "uniqby/yii2-phone-formatter": "0.2.*"
+        "futuretek/yii2-shared": "^3.0.0",
+        "uniqby/yii2-phone-formatter": "^0.2.1"
     },
     "autoload": {
         "psr-4": {
