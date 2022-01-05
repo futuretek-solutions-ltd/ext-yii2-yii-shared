@@ -26,7 +26,8 @@
     "require": {
         "php": ">=7.4.0",
         "yiisoft/yii2": "^2.0.0",
-        "futuretek/yii2-shared": "^3.0.0"
+        "futuretek/yii2-shared": "^3.0.0",
+        "giggsey/libphonenumber-for-php": "^8.12.35"
     },
     "autoload": {
         "psr-4": {
