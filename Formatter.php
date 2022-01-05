@@ -2,7 +2,10 @@
 
 namespace futuretek\yii\shared;
 
-use yii\base\InvalidParamException;
+use libphonenumber\NumberParseException;
+use libphonenumber\PhoneNumberFormat;
+use libphonenumber\PhoneNumberUtil;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class Formatter
@@ -12,7 +15,7 @@ use yii\base\InvalidParamException;
  * @license Apache-2.0
  * @link    http://www.futuretek.cz
  */
-class Formatter extends \uniqby\phoneFormatter\i18n\Formatter
+class Formatter extends \yii\i18n\Formatter
 {
     /** @var string Distance unit sign (km, mi, ...) */
     public $distanceUnits = 'km';
@@ -25,7 +28,7 @@ class Formatter extends \uniqby\phoneFormatter\i18n\Formatter
      *
      * @param float|int $value The value to be formatted
      * @return string
-     * @throws \yii\base\InvalidParamException
+     * @throws InvalidArgumentException
      */
     public function asDistance($value)
     {
@@ -41,11 +44,11 @@ class Formatter extends \uniqby\phoneFormatter\i18n\Formatter
      *
      * @param mixed $value the value to be formatted.
      * @return string the formatted result.
-     * @throws \yii\base\InvalidParamException
+     * @throws InvalidArgumentException
      */
     public function asGps($value)
     {
-        return parent::asDecimal($value, 6);
+        return $this->asDecimal($value, 6);
     }
 
     /**
@@ -53,15 +56,52 @@ class Formatter extends \uniqby\phoneFormatter\i18n\Formatter
      *
      * @param string $number Phone number
      * @return string
-     * @throws \yii\base\InvalidParamException
+     * @throws InvalidArgumentException
      */
     public function asPhone($number)
     {
         $lang = explode('-', \Yii::$app->language);
         if (2 !== count($lang)) {
-            throw new InvalidParamException(\Yii::t('fts-yii-shared', 'Incomplete locale. Cannot determine country code.'));
+            throw new InvalidArgumentException(\Yii::t('fts-yii-shared', 'Incomplete locale. Cannot determine country code.'));
         }
 
         return self::asPhoneInt($number, $lang[1]);
+    }
+    /**
+     * Converts phone to E164 format
+     *
+     * @param string $phone
+     * @param $defaultRegionAlpha2
+     * @return String
+     */
+    public static function asPhoneE164($phone, $defaultRegionAlpha2)
+    {
+        $phoneUtil = PhoneNumberUtil::getInstance();
+
+        try {
+            $phoneNumber = $phoneUtil->parseAndKeepRawInput($phone, $defaultRegionAlpha2);
+            return $phoneUtil->format($phoneNumber, PhoneNumberFormat::E164);
+        } catch (NumberParseException $e) {
+            return $phone;
+        }
+    }
+
+    /**
+     * Converts phone number to international format
+     *
+     * @param string $phone
+     * @param $defaultRegionAlpha2
+     * @return String
+     */
+    public static function asPhoneInt($phone, $defaultRegionAlpha2)
+    {
+        $phoneUtil = PhoneNumberUtil::getInstance();
+
+        try {
+            $phoneNumber = $phoneUtil->parseAndKeepRawInput($phone, $defaultRegionAlpha2);
+            return $phoneUtil->format($phoneNumber, PhoneNumberFormat::INTERNATIONAL);
+        } catch (NumberParseException $e) {
+            return $phone;
+        }
     }
 }

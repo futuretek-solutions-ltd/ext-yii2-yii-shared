@@ -26,8 +26,7 @@
     "require": {
         "php": ">=7.4.0",
         "yiisoft/yii2": "^2.0.0",
-        "futuretek/yii2-shared": "^3.0.0",
-        "uniqby/yii2-phone-formatter": "^0.2.1"
+        "futuretek/yii2-shared": "^3.0.0"
     },
     "autoload": {
         "psr-4": {
