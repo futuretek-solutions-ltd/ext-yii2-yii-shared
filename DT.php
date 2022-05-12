@@ -616,7 +616,8 @@ class DT
     public static function toSeconds(DateInterval $dateInterval)
     {
         $reference = self::c();
-        $endTime = $reference->add($dateInterval);
+        $endTime = clone $reference;
+        $endTime->add($dateInterval);
 
         return $endTime->getTimestamp() - $reference->getTimestamp();
     }
