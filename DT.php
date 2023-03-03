@@ -645,4 +645,24 @@ class DT
 
         return $date;
     }
+
+
+    /**
+     * Compare two datetimes.
+     * Return:
+     * <ul>
+     * <li>-1 if first <i>d1</i> is less than <i>d2</i></li>
+     * <li>1 if <i>d1</i> is greater than <i>d2</i></li>
+     * <li>0 if they are equal</li>
+     * </ul>
+     *
+     * @param \DateTime|int|string $d1 Date in valid format or DateTime object or timestamp(int)
+     * @param \DateTime|int|string $d2 Date in valid format or DateTime object or timestamp(int)
+     * @return int
+     * @throws \Exception
+     */
+    public static function compare($d1, $d2): int
+    {
+        return strcmp(self::c($d1)->format('c'), self::c($d2)->format('c'));
+    }
 }
