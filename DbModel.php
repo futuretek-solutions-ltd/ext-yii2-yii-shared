@@ -42,6 +42,81 @@ class DbModel extends ActiveRecord
     }
 
     /**
+     * Upsert (INSERT on duplicate keys UPDATE)
+     *
+     * @param boolean $runValidation
+     * @param array $attributes
+     * @return boolean
+     */
+    public function upsert($runValidation = true, $attributes = null)
+    {
+        if ($runValidation) {
+            // reset isNewRecord to pass "unique" attribute validator because of upsert
+            $this->setIsNewRecord(false);
+            if (!$this->validate($attributes)) {
+                \Yii::info('Model not inserted due to validation error.', __METHOD__);
+                return false;
+            }
+        }
+
+        if (!$this->isTransactional(self::OP_INSERT)) {
+            return $this->upsertInternal($attributes);
+        }
+
+        $transaction = static::getDb()->beginTransaction();
+        try {
+            $result = $this->upsertInternal($attributes);
+            if ($result === false) {
+                $transaction->rollBack();
+            } else {
+                $transaction->commit();
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Insert or update an ActiveRecord into DB without considering transaction.
+     *
+     * @param array $attributes list of attributes that need to be saved. Defaults to `null`,
+     * meaning all attributes that are loaded from DB will be saved.
+     * @return bool whether the record is saved successfully.
+     */
+    protected function upsertInternal($attributes = null)
+    {
+        if (!$this->beforeSave(true)) {
+            return false;
+        }
+
+        //attributes for INSERT
+        $insertValues = $this->getAttributes($attributes);
+
+        //attributes for UPDATE (excluding primary key)
+        $updateValues = array_slice($insertValues, 0);
+        foreach (static::getDb()->getTableSchema(static::tableName())->primaryKey as $key) {
+            unset($updateValues[$key]);
+        }
+
+        //update/insert
+        if (static::getDb()->createCommand()->upsert(static::tableName(), $insertValues, $updateValues ?: false)->execute() === false) {
+            return false;
+        }
+
+        $changedAttributes = array_fill_keys(array_keys($insertValues), null);
+        $this->setOldAttributes($insertValues);
+        $this->afterSave(true, $changedAttributes);
+
+        return true;
+    }
+
+    /**
      * @inheritdoc
      */
     public function afterValidate()
