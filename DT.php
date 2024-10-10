@@ -7,7 +7,6 @@ use DateTime;
 use DateTimeZone;
 use futuretek\shared\Tools;
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidParamException;
 
 /**
  * Class DT
@@ -28,17 +27,18 @@ class DT
     const DOW_SATURDAY = 5;
     const DOW_SUNDAY = 6;
 
-
     /**
      * Create DateTime object for specified date and time
      *
      * @param string $dateTime Date and time in valid format
+     * @param string|null $timezone Timezone
      * @return DateTime
      * @throws \Exception
+     * @see https://www.php.net/manual/en/timezones.php list of supported timezone codes
      */
-    public static function c($dateTime = 'now')
+    public static function c($dateTime = 'now', $timezone = null)
     {
-        return new DateTime($dateTime, new DateTimeZone(\Yii::$app->timeZone));
+        return new DateTime($dateTime, new DateTimeZone($timezone ? $timezone :  \Yii::$app->timeZone));
     }
 
     /**
@@ -151,19 +151,21 @@ class DT
      * Ensure that parameter is DateTime object and that this object is cloned
      *
      * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
+     * @param string|null $timezone Timezone
      * @return DateTime
      * @throws \Exception
+     * @see https://www.php.net/manual/en/timezones.php list of supported timezone codes
      */
-    public static function ensure($dateTime)
+    public static function ensure($dateTime, $timezone = null)
     {
         if ($dateTime instanceof DateTime) {
             return clone $dateTime;
         }
         if (is_int($dateTime)) {
-            return self::c('@' . $dateTime);
+            return self::c('@' . $dateTime, $timezone);
         }
 
-        return self::c($dateTime);
+        return self::c($dateTime, $timezone);
     }
 
     /**
@@ -172,7 +174,7 @@ class DT
      * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
      * @param string $format Display format @see yii\i18n\Formatter
      * @return string
-     * @throws \yii\base\InvalidParamException
+     * @throws \yii\base\InvalidArgumentException
      * @throws \yii\base\InvalidConfigException
      */
     public static function displayDate($dateTime, $format = null)
@@ -186,7 +188,7 @@ class DT
      * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
      * @param string $format Display format @see yii\i18n\Formatter
      * @return string
-     * @throws \yii\base\InvalidParamException
+     * @throws \yii\base\InvalidArgumentException
      * @throws \yii\base\InvalidConfigException
      */
     public static function displayDateTime($dateTime, $format = null)
@@ -200,7 +202,7 @@ class DT
      * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
      * @param string $format Display format @see yii\i18n\Formatter
      * @return string
-     * @throws \yii\base\InvalidParamException
+     * @throws \yii\base\InvalidArgumentException
      * @throws \yii\base\InvalidConfigException
      */
     public static function displayTime($dateTime, $format = null)
@@ -212,20 +214,21 @@ class DT
      * Convert datetime to different timezone
      *
      * @param DateTime|string|int $dateTime Date and time in valid format or DateTime object or timestamp(int)
-     * @param string $timezone Target timezone name
+     * @param string $targetTimezone Target timezone name
+     * @param string|null $sourceTimezone Source timezone name or application timezone when null
      * @return DateTime
-     * @see http://php.net/manual/en/timezones.php
-     * @throws \yii\base\InvalidParamException
+     * @throws \yii\base\InvalidArgumentException
      * @throws \Exception
+     * @see https://www.php.net/manual/en/timezones.php list of supported timezone codes
      */
-    public static function convertTimezone($dateTime, $timezone)
+    public static function convertTimezone($dateTime, $targetTimezone, $sourceTimezone = null)
     {
-        $dt = self::ensure($dateTime);
-        if ($timezone === \Yii::$app->timeZone) {
+        $dt = self::ensure($dateTime, $sourceTimezone);
+        if ($targetTimezone === \Yii::$app->timeZone) {
             return $dt;
         }
 
-        return $dt->setTimezone(new DateTimeZone($timezone));
+        return $dt->setTimezone(new DateTimeZone($targetTimezone));
     }
 
     /**
