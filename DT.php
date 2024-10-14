@@ -224,7 +224,7 @@ class DT
     public static function convertTimezone($dateTime, $targetTimezone, $sourceTimezone = null)
     {
         $dt = self::ensure($dateTime, $sourceTimezone);
-        if ($targetTimezone === \Yii::$app->timeZone) {
+        if ($targetTimezone === $sourceTimezone) {
             return $dt;
         }
 
