@@ -24,14 +24,26 @@
         "source": "https://github.com/futuretek-solutions-ltd/ext-yii2-yii-shared"
     },
     "require": {
-        "php": ">=7.4.0",
-        "yiisoft/yii2": "^2.0.0",
-        "futuretek/yii2-shared": "^3.0.0",
-        "giggsey/libphonenumber-for-php": "^8.12.35"
+        "php": ">=8.2",
+        "yiisoft/yii2": "^2.0.52",
+        "futuretek/yii2-shared": "^3.7.1",
+        "giggsey/libphonenumber-for-php": "^8.13.28"
     },
     "autoload": {
         "psr-4": {
             "futuretek\\yii\\shared\\": ""
+        }
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ],
+    "config": {
+        "allow-plugins": {
+            "futuretek/yii2-composer": true,
+            "yiisoft/yii2-composer": true
         }
     },
     "extra": {
