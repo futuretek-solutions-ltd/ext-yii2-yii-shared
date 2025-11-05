@@ -88,10 +88,10 @@ class FileDateTarget extends Target
 
         if ($this->enableRotation && is_file($this->logFile)) {
             $midnight = strtotime('midnight');
-            $filectime = filectime($this->logFile);
-            if ($filectime < $midnight) {
+            $filemtime = filemtime($this->logFile);
+            if ($filemtime !== false && $filemtime < $midnight) {
                 $yesterday = strtotime('-1 day', $midnight);
-                $this->rotateFile(min($filectime, $yesterday));
+                $this->rotateFile((int)min($filemtime, $yesterday));
                 if ($this->maxLogFiles > 0) {
                     $this->cleanOldLogFiles();
                 }
@@ -163,38 +163,75 @@ class FileDateTarget extends Target
         $extension = isset($fileInfo['extension']) ? ".{$fileInfo['extension']}" : '';
         $newFileName = "{$fileInfo['dirname']}/{$fileInfo['filename']}-" . date('Y-m-d', $date) . $extension;
 
-        if (is_file($oldFileName)) {
-            $result = rename($oldFileName, $newFileName);
-            if (!$result) {
-                // The problem with Windows systems where the rename() function does not work with files that are opened by some
-                // process is described in a comment by Martin Pelletier https://www.php.net/manual/en/function.rename.php#102274
-                // in the PHP documentation. The way around this is to copy and clear the original file.
+        // simple best-effort rotate lock
+        $lockPath = $oldFileName . '.rotate.lock';
+        $lock = @fopen($lockPath, 'cb');
+        if ($lock) {
+            @flock($lock, LOCK_EX);
+        }
+
+        try {
+            if (!is_file($oldFileName) || filesize($oldFileName) === 0) {
+                return;
+            }
+
+            // If the destination already exists, APPEND instead of overwriting.
+            if (is_file($newFileName)) {
+                $src = @fopen($oldFileName, 'rb');
+                $dst = @fopen($newFileName, 'ab');
+                if ($src && $dst) {
+                    stream_copy_to_stream($src, $dst);
+                }
+                if ($src) fclose($src);
+                if ($dst) fclose($dst);
+                $this->clearLogFile($oldFileName);
+                if ($this->fileMode !== null) {
+                    @chmod($newFileName, $this->fileMode);
+                }
+                return;
+            }
+
+            if (!@rename($oldFileName, $newFileName)) {
+                // Windows fallback: copy, then truncate original
                 $this->moveByCopy($oldFileName, $newFileName);
                 $this->clearLogFile($oldFileName);
+            }
+
+            if ($this->fileMode !== null) {
+                @chmod($newFileName, $this->fileMode);
+            }
+        } finally {
+            if ($lock) {
+                @flock($lock, LOCK_UN);
+                @fclose($lock);
+                @unlink($lockPath);
             }
         }
     }
 
-    /***
-     * Clear log file without closing any other process open handles
-     * @param string $file
-     */
     private function clearLogFile(string $file): void
     {
-        if ($filePointer = @fopen($file, 'ab')) {
-            @ftruncate($filePointer, 0);
-            @fclose($filePointer);
+        $fp = @fopen($file, 'ab');
+        if ($fp) {
+            @flock($fp, LOCK_EX);
+            @ftruncate($fp, 0);
+            @fflush($fp);
+            @flock($fp, LOCK_UN);
+            @fclose($fp);
         }
     }
 
-    /***
-     * Copy file into new file
-     * @param string $oldFile
-     * @param string $newFile
-     */
     private function moveByCopy(string $oldFile, string $newFile): void
     {
-        @copy($oldFile, $newFile);
+        if (is_file($newFile)) {
+            // append to existing daily file
+            $data = @file_get_contents($oldFile);
+            if ($data !== false) {
+                @file_put_contents($newFile, $data, FILE_APPEND | LOCK_EX);
+            }
+        } else {
+            @copy($oldFile, $newFile);
+        }
         if ($this->fileMode !== null) {
             @chmod($newFile, $this->fileMode);
         }
